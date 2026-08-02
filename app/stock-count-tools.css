@@ -1,0 +1,30 @@
+.stockCountTools{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(210px,.55fr);
+  gap:12px;
+  align-items:end;
+  margin:14px 0 18px;
+  padding:14px;
+  border:1px solid #dbe4ef;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:0 5px 18px rgba(16,33,61,.06);
+}
+.stockCountTools label{display:grid;gap:6px}
+.stockCountTools label span{font-size:.78rem;font-weight:700;color:#526174;text-transform:uppercase;letter-spacing:.04em}
+.stockCountTools input,.stockCountTools select{
+  width:100%;
+  min-height:44px;
+  padding:10px 12px;
+  border:1px solid #cbd6e2;
+  border-radius:10px;
+  background:#fff;
+  color:#17263b;
+  font:inherit;
+}
+.stockCountTools input:focus,.stockCountTools select:focus{outline:2px solid rgba(40,105,181,.22);border-color:#2869b5}
+.stockCountTools small{grid-column:1/-1;color:#65758a}
+@media(max-width:680px){
+  .stockCountTools{grid-template-columns:1fr;margin-top:12px;padding:12px}
+  .stockCountTools small{grid-column:auto}
+}
