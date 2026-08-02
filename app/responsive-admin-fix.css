@@ -1,0 +1,92 @@
+/* Responsive correction: preserve categories, submission panel and admin navigation. */
+
+@media (max-width: 1050px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardGrid > .panel {
+    order: 1;
+  }
+
+  .submissionPanel {
+    order: 2;
+    position: static;
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .appShell {
+    display: block;
+  }
+
+  .sidebar {
+    display: flex !important;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--navy);
+  }
+
+  .sidebar .brand,
+  .sidebar .version {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .sidebar nav button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 10px 13px;
+  }
+
+  .workspace {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboardGrid > .panel,
+  .submissionPanel {
+    width: 100%;
+  }
+
+  .categoryGrid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .headerActions {
+    display: flex !important;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .headerActions button {
+    display: inline-flex !important;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .rowActions {
+    display: flex !important;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .rowActions button {
+    display: inline-flex !important;
+    justify-content: center;
+    flex: 1 1 90px;
+  }
+}
