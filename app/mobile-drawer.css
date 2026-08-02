@@ -1,0 +1,54 @@
+.mobileDrawerButton,.mobileDrawerOverlay{display:none}
+
+@media (max-width:900px){
+  body{overflow-x:hidden}
+  .appShell{display:block!important}
+  .sidebar{
+    display:flex!important;
+    position:fixed!important;
+    inset:0 auto 0 0;
+    z-index:1002;
+    width:min(82vw,300px)!important;
+    height:100dvh;
+    padding:22px 18px!important;
+    transform:translateX(-105%);
+    transition:transform .22s ease;
+    box-shadow:8px 0 30px rgba(16,33,61,.24);
+  }
+  .sidebar .brand{display:flex!important}
+  .sidebar .version{display:block!important}
+  .sidebar nav{display:grid!important;overflow:visible!important;gap:7px!important}
+  .sidebar nav button{width:100%;white-space:normal!important}
+  body.drawerOpen .sidebar{transform:translateX(0)}
+  .mobileDrawerButton{
+    display:grid;
+    place-items:center;
+    position:fixed;
+    left:14px;
+    top:14px;
+    z-index:1004;
+    width:44px;
+    height:44px;
+    border:0;
+    border-radius:11px;
+    background:var(--navy);
+    color:#fff;
+    font-size:25px;
+    line-height:1;
+    box-shadow:0 6px 20px rgba(16,33,61,.22);
+  }
+  .mobileDrawerOverlay{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:1001;
+    border:0;
+    padding:0;
+    background:rgba(16,33,61,.48);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .22s ease;
+  }
+  body.drawerOpen .mobileDrawerOverlay{opacity:1;pointer-events:auto}
+  .workspace{width:100%;padding-top:72px!important}
+}
