@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import './panel-fix.css';
 import './responsive-admin-fix.css';
+import './mobile-drawer.css';
+import MobileDrawerController from './MobileDrawerController';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -11,7 +13,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <MobileDrawerController />
+        {children}
+      </body>
     </html>
   );
 }
