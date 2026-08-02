@@ -1,8 +1,16 @@
 .stockCountTools{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(190px,280px);
+  grid-template-columns:minmax(0,1fr) minmax(190px,280px) auto;
+  align-items:end;
   gap:12px;
   margin:0 0 18px;
+}
+.stockCountTools label{
+  display:grid;
+  gap:6px;
+  color:#536078;
+  font-size:13px;
+  font-weight:700;
 }
 .stockCountTools input,.stockCountTools select{
   width:100%;
@@ -18,7 +26,18 @@
   outline:3px solid rgba(45,105,210,.14);
   border-color:#2d69d2;
 }
-.countCards>article[hidden]{display:none!important}
+.stockCountTools>button{
+  min-height:46px;
+  white-space:nowrap;
+}
 @media(max-width:680px){
-  .stockCountTools{grid-template-columns:1fr;position:sticky;top:70px;z-index:20;background:#f5f7fb;padding:10px 0}
+  .stockCountTools{
+    grid-template-columns:1fr;
+    position:sticky;
+    top:70px;
+    z-index:20;
+    background:#f5f7fb;
+    padding:10px 0;
+  }
+  .stockCountTools>button{width:100%}
 }
