@@ -2,17 +2,22 @@
 
 @media (max-width: 1050px) {
   .dashboardGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboardGrid > .panel {
-    order: 1;
+    grid-template-columns: 280px minmax(0, 1fr);
+    align-items: start;
   }
 
   .submissionPanel {
-    order: 2;
-    position: static;
+    grid-column: 1;
+    order: 1;
+    position: sticky;
+    top: 76px;
     width: 100%;
+  }
+
+  .dashboardGrid > .panel {
+    grid-column: 2;
+    order: 2;
+    min-width: 0;
   }
 }
 
@@ -55,12 +60,26 @@
   }
 }
 
-@media (max-width: 600px) {
-  .dashboardGrid > .panel,
-  .submissionPanel {
+@media (max-width: 760px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboardGrid > .panel {
+    grid-column: 1;
+    order: 1;
     width: 100%;
   }
 
+  .submissionPanel {
+    grid-column: 1;
+    order: 2;
+    position: static;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
   .categoryGrid {
     display: grid !important;
     grid-template-columns: 1fr !important;
