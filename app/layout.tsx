@@ -7,7 +7,6 @@ import './safe-enhancements.css';
 import './publication-search-position.css';
 import './stock-count-tools.css';
 import MobileDrawerController from './MobileDrawerController';
-import StockCountTools from './StockCountTools';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -19,7 +18,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <MobileDrawerController />
-        <StockCountTools />
         {children}
       </body>
     </html>
