@@ -5,7 +5,6 @@ import './responsive-admin-fix.css';
 import './mobile-drawer.css';
 import './safe-enhancements.css';
 import MobileDrawerController from './MobileDrawerController';
-import NavigationScrollController from './NavigationScrollController';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -17,7 +16,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <MobileDrawerController />
-        <NavigationScrollController />
         {children}
       </body>
     </html>
