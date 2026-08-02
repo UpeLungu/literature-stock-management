@@ -4,6 +4,7 @@ import './panel-fix.css';
 import './responsive-admin-fix.css';
 import './mobile-drawer.css';
 import './safe-enhancements.css';
+import './publication-search-position.css';
 import MobileDrawerController from './MobileDrawerController';
 
 export const metadata: Metadata = {
