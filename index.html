@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#2155a6" />
+  <title>Literature Stock</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">LS</div>
+        <div>
+          <strong>Literature Stock</strong>
+          <small>Multi-congregation inventory</small>
+        </div>
+      </div>
+      <nav id="nav"></nav>
+      <div class="sidebar-footer">
+        <small>Prototype MVP</small>
+        <span>August 2026</span>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Track literature stock across congregations</p>
+        </div>
+        <div class="topbar-actions">
+          <select id="congregationSelect" aria-label="Select congregation"></select>
+          <button class="avatar" title="Signed in user">UL</button>
+        </div>
+      </header>
+
+      <section id="content" class="content"></section>
+    </main>
+  </div>
+
+  <template id="toastTemplate"><div class="toast"></div></template>
+  <script src="app.js"></script>
+</body>
+</html>
