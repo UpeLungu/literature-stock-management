@@ -1,0 +1,22 @@
+/* Keep the approved Submission Status panel visible without changing existing features. */
+.dashboardGrid > .panel {
+  min-width: 0;
+}
+
+.submissionPanel {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 1050px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .submissionPanel {
+    order: -1;
+    position: static;
+    width: 100%;
+  }
+}
