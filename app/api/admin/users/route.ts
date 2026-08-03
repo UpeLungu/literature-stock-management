@@ -62,6 +62,33 @@ export async function GET(request: NextRequest) {
   const { data: authData, error: authError } = await authorization.adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (authError) return NextResponse.json({ error: authError.message }, { status: 400 });
 
+  const { data: existingProfiles, error: existingError } = await authorization.adminClient
+    .schema('public')
+    .from('profiles')
+    .select('id');
+  if (existingError) return NextResponse.json({ error: existingError.message }, { status: 400 });
+
+  const existingIds = new Set((existingProfiles || []).map(profile => profile.id));
+  const missingProfiles = authData.users
+    .filter(user => !existingIds.has(user.id))
+    .map(user => ({
+      id: user.id,
+      full_name: String(user.user_metadata?.full_name || user.email || 'Unnamed user'),
+      role: 'literature_servant' as Role,
+      congregation_key: null,
+      active: true,
+      created_at: user.created_at,
+      updated_at: new Date().toISOString(),
+    }));
+
+  if (missingProfiles.length > 0) {
+    const { error: repairError } = await authorization.adminClient
+      .schema('public')
+      .from('profiles')
+      .upsert(missingProfiles, { onConflict: 'id' });
+    if (repairError) return NextResponse.json({ error: repairError.message }, { status: 400 });
+  }
+
   const { data: profiles, error: profileError } = await authorization.adminClient
     .schema('public')
     .from('profiles')
@@ -114,8 +141,15 @@ export async function POST(request: NextRequest) {
   const { error: updateError } = await authorization.adminClient
     .schema('public')
     .from('profiles')
-    .update({ full_name: fullName, role, congregation_key: congregationKey, active: true, updated_at: new Date().toISOString() })
-    .eq('id', data.user.id);
+    .upsert({
+      id: data.user.id,
+      full_name: fullName,
+      role,
+      congregation_key: congregationKey,
+      active: true,
+      created_at: data.user.created_at,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' });
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
 
   return NextResponse.json({ message: `Invitation sent to ${email}.` });
