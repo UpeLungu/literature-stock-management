@@ -9,9 +9,11 @@ import './stock-count-tools.css';
 import './auth.css';
 import './quantity-dialog.css';
 import './ui-polish.css';
+import './submission-success.css';
 import MobileDrawerController from './MobileDrawerController';
 import SafeCloudWriter from './SafeCloudWriter';
 import AuthGate from './AuthGate';
+import SubmissionSuccessController from './SubmissionSuccessController';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -25,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <AuthGate>
           <MobileDrawerController />
           <SafeCloudWriter />
+          <SubmissionSuccessController />
           {children}
         </AuthGate>
       </body>
