@@ -1,0 +1,43 @@
+.stockCountTools{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(190px,280px) auto;
+  align-items:end;
+  gap:12px;
+  margin:0 0 18px;
+}
+.stockCountTools label{
+  display:grid;
+  gap:6px;
+  color:#536078;
+  font-size:13px;
+  font-weight:700;
+}
+.stockCountTools input,.stockCountTools select{
+  width:100%;
+  min-height:46px;
+  border:1px solid #d7dfeb;
+  border-radius:11px;
+  background:#fff;
+  padding:0 14px;
+  color:#17233c;
+  font:inherit;
+}
+.stockCountTools input:focus,.stockCountTools select:focus{
+  outline:3px solid rgba(45,105,210,.14);
+  border-color:#2d69d2;
+}
+.stockCountTools>button{
+  min-height:46px;
+  white-space:nowrap;
+}
+@media(max-width:680px){
+  .stockCountTools{
+    grid-template-columns:1fr;
+    position:sticky;
+    top:70px;
+    z-index:20;
+    background:#f5f7fb;
+    padding:10px 0;
+  }
+  .stockCountTools>button{width:100%}
+}
