@@ -6,8 +6,10 @@ import './mobile-drawer.css';
 import './safe-enhancements.css';
 import './publication-search-position.css';
 import './stock-count-tools.css';
+import './auth.css';
 import MobileDrawerController from './MobileDrawerController';
 import SafeCloudWriter from './SafeCloudWriter';
+import AuthGate from './AuthGate';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -18,9 +20,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <MobileDrawerController />
-        <SafeCloudWriter />
-        {children}
+        <AuthGate>
+          <MobileDrawerController />
+          <SafeCloudWriter />
+          {children}
+        </AuthGate>
       </body>
     </html>
   );
