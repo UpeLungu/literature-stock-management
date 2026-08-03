@@ -190,6 +190,36 @@ export default function UserAdminOverlay({ currentUserId, isAdmin }: { currentUs
     }
   };
 
+  const deleteUser = async (profile: Profile) => {
+    if (profile.id === currentUserId) {
+      setMessage('You cannot delete your own administrator account.');
+      return;
+    }
+    const activeAdmins = profiles.filter(item => item.role === 'admin' && item.active);
+    if (profile.role === 'admin' && profile.active && activeAdmins.length <= 1) {
+      setMessage('The last active administrator cannot be deleted.');
+      return;
+    }
+    const name = profile.full_name || profile.email || 'this user';
+    if (!window.confirm(`Permanently delete ${name}? This removes the login account and cannot be undone.`)) return;
+
+    setWorkingAction(`delete:${profile.id}`);
+    setMessage('');
+    try {
+      const result = await adminRequest<{ message: string }>('POST', {
+        action: 'delete_user',
+        userId: profile.id,
+      });
+      setMessage(result.message);
+      setProfiles(current => current.filter(item => item.id !== profile.id));
+      await loadProfiles();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to delete the user.');
+    } finally {
+      setWorkingAction(null);
+    }
+  };
+
   if (!open) return null;
 
   return <section className="userAdminOverlay" aria-label="User administration">
@@ -265,11 +295,20 @@ export default function UserAdminOverlay({ currentUserId, isAdmin }: { currentUs
         </label>
 
         <div className="userAdminActions">
-          <button onClick={() => void save(profile)} disabled={savingId === profile.id}>
+          <button onClick={() => void save(profile)} disabled={savingId === profile.id || workingAction === `delete:${profile.id}`}>
             {savingId === profile.id ? 'Saving…' : 'Save changes'}
           </button>
-          <button type="button" className="secondary" onClick={() => void sendPasswordReset(profile)} disabled={workingAction === `reset:${profile.id}`}>
+          <button type="button" className="secondary" onClick={() => void sendPasswordReset(profile)} disabled={workingAction === `reset:${profile.id}` || workingAction === `delete:${profile.id}`}>
             {workingAction === `reset:${profile.id}` ? 'Sending…' : 'Reset password'}
+          </button>
+          <button
+            type="button"
+            className="secondary danger"
+            onClick={() => void deleteUser(profile)}
+            disabled={profile.id === currentUserId || workingAction === `delete:${profile.id}`}
+            title={profile.id === currentUserId ? 'You cannot delete your own account.' : 'Permanently delete this user'}
+          >
+            {workingAction === `delete:${profile.id}` ? 'Deleting…' : 'Delete user'}
           </button>
         </div>
       </article>)}
