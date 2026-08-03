@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-type AdminAction = 'invite' | 'reset_password';
+type AdminAction = 'invite' | 'reset_password' | 'delete_user';
 type Role = 'admin' | 'literature_servant' | 'read_only';
 
 type AdminRequestBody = {
@@ -10,6 +10,7 @@ type AdminRequestBody = {
   fullName?: string;
   role?: Role;
   congregationKey?: string | null;
+  userId?: string;
 };
 
 function getConfiguration() {
@@ -110,6 +111,51 @@ export async function POST(request: NextRequest) {
     body = await request.json() as AdminRequestBody;
   } catch {
     return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 });
+  }
+
+  if (body.action === 'delete_user') {
+    const userId = body.userId?.trim();
+    if (!userId) return NextResponse.json({ error: 'User ID is required.' }, { status: 400 });
+    if (userId === authorization.user.id) {
+      return NextResponse.json({ error: 'You cannot delete your own administrator account.' }, { status: 400 });
+    }
+
+    const { data: target, error: targetError } = await authorization.adminClient
+      .schema('public')
+      .from('profiles')
+      .select('role,active,full_name')
+      .eq('id', userId)
+      .single();
+    if (targetError || !target) {
+      return NextResponse.json({ error: 'The selected user profile could not be found.' }, { status: 404 });
+    }
+
+    if (target.role === 'admin' && target.active === true) {
+      const { count, error: countError } = await authorization.adminClient
+        .schema('public')
+        .from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'admin')
+        .eq('active', true);
+      if (countError) return NextResponse.json({ error: countError.message }, { status: 400 });
+      if ((count || 0) <= 1) {
+        return NextResponse.json({ error: 'The last active administrator cannot be deleted.' }, { status: 400 });
+      }
+    }
+
+    const { error: deleteAuthError } = await authorization.adminClient.auth.admin.deleteUser(userId);
+    if (deleteAuthError) return NextResponse.json({ error: deleteAuthError.message }, { status: 400 });
+
+    const { error: deleteProfileError } = await authorization.adminClient
+      .schema('public')
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+    if (deleteProfileError) {
+      return NextResponse.json({ error: `Authentication account deleted, but profile cleanup failed: ${deleteProfileError.message}` }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: `${target.full_name || 'User'} was permanently deleted.` });
   }
 
   const email = body.email?.trim().toLowerCase();
