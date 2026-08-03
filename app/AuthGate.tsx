@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { getSupabaseBrowserClient } from '../lib/supabase-browser';
+import UserAdminOverlay from './UserAdminOverlay';
 
 type Profile = {
   id: string;
@@ -141,7 +142,14 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   return <>
-    <div className="accountPill"><span>{profile.full_name || session.user.email}</span><small>{profile.role.replace('_', ' ')}</small><button onClick={signOut}>Sign out</button></div>
+    <div className="accountBar">
+      <div className="accountIdentity">
+        <strong>{profile.full_name || session.user.email}</strong>
+        <span>{profile.role.replace('_', ' ')}</span>
+      </div>
+      <button onClick={signOut}>Sign out</button>
+    </div>
+    <UserAdminOverlay currentUserId={profile.id} isAdmin={profile.role === 'admin'} />
     {children}
   </>;
 }
