@@ -7,6 +7,7 @@ type LocalCount = { physical: number; verified: boolean };
 type LocalCounts = Record<string, LocalCount>;
 
 const COUNTS_PREFIX = 'lms-counts-v3:';
+const SUBMIT_SUCCESS_MESSAGE = 'Stock count submitted successfully.';
 
 function parseCounts(value: string | null): LocalCounts {
   if (!value) return {};
@@ -23,6 +24,7 @@ export default function SafeCloudWriter() {
     if (!supabase) return;
 
     const originalSetItem = Storage.prototype.setItem;
+    const originalAlert = window.alert.bind(window);
     let timer: number | undefined;
     let stopped = false;
 
@@ -82,6 +84,30 @@ export default function SafeCloudWriter() {
       }
     };
 
+    const submitCurrentPeriod = async () => {
+      const period = localStorage.getItem('lms-selected-period');
+      const congregationKey = document.querySelector<HTMLSelectElement>('.topbar select')?.value;
+      if (!period || !congregationKey || !/^\d{4}-\d{2}$/.test(period)) return;
+
+      await syncPeriod(period);
+      const submittedAt = new Date().toISOString();
+      const { error } = await supabase
+        .schema('public')
+        .from('stock_count_periods')
+        .update({
+          status: 'submitted',
+          submitted_at: submittedAt,
+          submitted_by: 'Current user',
+          updated_at: submittedAt,
+        })
+        .eq('congregation_key', congregationKey)
+        .eq('period', period);
+
+      if (error) {
+        console.warn('Supabase submission status update failed; browser counts remain safe.', error);
+      }
+    };
+
     const schedule = (period: string) => {
       window.clearTimeout(timer);
       timer = window.setTimeout(() => void syncPeriod(period), 500);
@@ -98,6 +124,11 @@ export default function SafeCloudWriter() {
       }
     };
 
+    window.alert = (message?: unknown) => {
+      if (message === SUBMIT_SUCCESS_MESSAGE) void submitCurrentPeriod();
+      originalAlert(message === undefined ? '' : String(message));
+    };
+
     const currentPeriod = localStorage.getItem('lms-selected-period');
     if (currentPeriod) schedule(currentPeriod);
 
@@ -105,6 +136,7 @@ export default function SafeCloudWriter() {
       stopped = true;
       window.clearTimeout(timer);
       Storage.prototype.setItem = originalSetItem;
+      window.alert = originalAlert;
     };
   }, []);
 
