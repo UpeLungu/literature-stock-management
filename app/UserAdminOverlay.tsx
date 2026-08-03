@@ -33,11 +33,13 @@ export default function UserAdminOverlay({ currentUserId, isAdmin }: { currentUs
   const [savingId, setSavingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
 
-  const congregations = useMemo(() => {
+  const congregations = useMemo<Congregation[]>(() => {
     try {
       const raw = localStorage.getItem('lms-admin-v3');
       const parsed = raw ? JSON.parse(raw) : null;
-      const saved = Array.isArray(parsed?.congregations) ? parsed.congregations : fallbackCongregations;
+      const saved: Congregation[] = Array.isArray(parsed?.congregations)
+        ? (parsed.congregations as Congregation[])
+        : fallbackCongregations;
       return saved.filter((item: Congregation) => item.active !== false);
     } catch {
       return fallbackCongregations;
@@ -147,7 +149,7 @@ export default function UserAdminOverlay({ currentUserId, isAdmin }: { currentUs
             onChange={event => updateLocal(profile.id, { congregation_key: event.target.value || null })}
           >
             <option value="">Not assigned</option>
-            {congregations.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+            {congregations.map((item: Congregation) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
 
