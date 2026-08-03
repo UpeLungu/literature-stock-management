@@ -6,7 +6,9 @@ import './mobile-drawer.css';
 import './safe-enhancements.css';
 import './publication-search-position.css';
 import './stock-count-tools.css';
+import './cloud-sync.css';
 import MobileDrawerController from './MobileDrawerController';
+import CloudStockSync from './CloudStockSync';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -18,6 +20,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <MobileDrawerController />
+        <CloudStockSync />
         {children}
       </body>
     </html>
