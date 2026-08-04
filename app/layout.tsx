@@ -19,6 +19,7 @@ import AuthGate from './AuthGate';
 import SubmissionSuccessController from './SubmissionSuccessController';
 import PublicationCategoryBrowser from './PublicationCategoryBrowser';
 import AdminDialogControllerV2 from './AdminDialogControllerV2';
+import ZeroBalanceInitializer from './ZeroBalanceInitializer';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SubmissionSuccessController />
           <PublicationCategoryBrowser />
           <AdminDialogControllerV2 />
+          <ZeroBalanceInitializer />
           {children}
         </AuthGate>
       </body>
