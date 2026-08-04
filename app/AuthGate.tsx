@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { getSupabaseBrowserClient } from '../lib/supabase-browser';
 import UserAdminOverlay from './UserAdminOverlay';
@@ -13,10 +13,15 @@ type Profile = {
   active: boolean;
 };
 
+const wait = (milliseconds: number) => new Promise(resolve => window.setTimeout(resolve, milliseconds));
+
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const profileRef = useRef<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileConfirmedMissing, setProfileConfirmedMissing] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,6 +31,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const [message, setMessage] = useState('');
   const [working, setWorking] = useState(false);
+
+  const storeProfile = (nextProfile: Profile | null) => {
+    profileRef.current = nextProfile;
+    setProfile(nextProfile);
+  };
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
@@ -37,22 +47,45 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
     let active = true;
 
-    const loadProfile = async (userId: string) => {
-      const { data, error } = await supabase
-        .schema('public')
-        .from('profiles')
-        .select('id,full_name,role,congregation_key,active')
-        .eq('id', userId)
-        .single();
+    const loadProfile = async (userId: string, preserveExisting = false) => {
+      const existingProfile = profileRef.current;
+      if (!preserveExisting || existingProfile?.id !== userId) setProfileLoading(true);
+      setProfileConfirmedMissing(false);
+
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        const { data, error } = await supabase
+          .schema('public')
+          .from('profiles')
+          .select('id,full_name,role,congregation_key,active')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (!active) return;
+
+        if (!error && data) {
+          storeProfile(data as Profile);
+          setMessage('');
+          setProfileLoading(false);
+          setProfileConfirmedMissing(false);
+          return;
+        }
+
+        if (attempt < 2) await wait(350 * (attempt + 1));
+      }
 
       if (!active) return;
-      if (error) {
-        setProfile(null);
-        setMessage('Your profile is not ready. Run the Phase 1 Supabase migration, then sign in again.');
-      } else {
-        setProfile(data as Profile);
-        setMessage('');
+
+      // A valid profile already loaded in this browser must remain visible during
+      // token refreshes, app resume events, and temporary network interruptions.
+      if (profileRef.current?.id === userId) {
+        setProfileLoading(false);
+        return;
       }
+
+      storeProfile(null);
+      setProfileLoading(false);
+      setProfileConfirmedMissing(true);
+      setMessage('Your profile record is not available. Contact an administrator if this account should already be active.');
     };
 
     void supabase.auth.getSession().then(async ({ data }) => {
@@ -65,15 +98,40 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
       setSession(nextSession);
-      setProfile(null);
-      if (nextSession) void loadProfile(nextSession.user.id);
+
+      if (!nextSession) {
+        storeProfile(null);
+        setProfileConfirmedMissing(false);
+        setProfileLoading(false);
+        return;
+      }
+
+      const sameUserProfile = profileRef.current?.id === nextSession.user.id;
+      void loadProfile(nextSession.user.id, sameUserProfile);
     });
+
+    const refreshOnResume = () => {
+      if (document.visibilityState !== 'visible') return;
+      const currentSession = sessionStorage.getItem('lms-profile-refresh-user');
+      const currentProfile = profileRef.current;
+      if (currentProfile && currentSession === currentProfile.id) {
+        void loadProfile(currentProfile.id, true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', refreshOnResume);
 
     return () => {
       active = false;
+      document.removeEventListener('visibilitychange', refreshOnResume);
       subscription.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (profile?.id) sessionStorage.setItem('lms-profile-refresh-user', profile.id);
+    else sessionStorage.removeItem('lms-profile-refresh-user');
+  }, [profile?.id]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -166,8 +224,16 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     </main>;
   }
 
+  if (!profile && profileLoading) {
+    return <main className="authShell"><section className="authCard"><h1>Literature Management System</h1><p>Refreshing your account…</p></section></main>;
+  }
+
+  if (!profile && profileConfirmedMissing) {
+    return <main className="authShell"><section className="authCard"><h1>Profile setup required</h1><p>{message}</p><button onClick={signOut}>Sign out</button></section></main>;
+  }
+
   if (!profile) {
-    return <main className="authShell"><section className="authCard"><h1>Profile setup required</h1><p>{message || 'Your account exists, but the profile record is not available.'}</p><button onClick={signOut}>Sign out</button></section></main>;
+    return <main className="authShell"><section className="authCard"><h1>Literature Management System</h1><p>Restoring your session…</p></section></main>;
   }
 
   if (!profile.active) {
