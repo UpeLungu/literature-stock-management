@@ -2,21 +2,15 @@
 
 import { useEffect, useState } from 'react';
 
-const SUCCESS_MESSAGE = 'Stock count submitted successfully.';
+const SUBMIT_SUCCESS_EVENT = 'lms:stock-submitted';
 
 export default function SubmissionSuccessController() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const originalAlert = window.alert.bind(window);
     let hideTimer: number | undefined;
 
-    window.alert = (message?: unknown) => {
-      if (String(message) !== SUCCESS_MESSAGE) {
-        originalAlert(String(message ?? ''));
-        return;
-      }
-
+    const handleSuccess = () => {
       setVisible(true);
       window.clearTimeout(hideTimer);
       hideTimer = window.setTimeout(() => setVisible(false), 3200);
@@ -29,8 +23,9 @@ export default function SubmissionSuccessController() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    window.addEventListener(SUBMIT_SUCCESS_EVENT, handleSuccess);
     return () => {
-      window.alert = originalAlert;
+      window.removeEventListener(SUBMIT_SUCCESS_EVENT, handleSuccess);
       window.clearTimeout(hideTimer);
     };
   }, []);
