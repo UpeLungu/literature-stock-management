@@ -10,52 +10,62 @@ export default function PublicationCategoryBrowser() {
 
     const mountBrowser = () => {
       const tools = document.querySelector<HTMLElement>('.publicationTools');
-      const select = tools?.querySelector<HTMLSelectElement>('select');
-      if (!tools || !select) return;
+      const sourceSelect = tools?.querySelector<HTMLSelectElement>('select');
+      if (!tools || !sourceSelect) return;
+
+      const panel = tools.closest<HTMLElement>('.panel');
+      const addButton = panel
+        ? Array.from(panel.querySelectorAll<HTMLButtonElement>('.panelHead .headerActions button')).find(
+            button => !button.textContent?.toLowerCase().includes('category'),
+          )
+        : null;
+      addButton?.classList.add('publicationAddButton');
 
       const existing = tools.parentElement?.querySelector<HTMLElement>(`:scope > .${WRAPPER_CLASS}`);
       if (existing) {
-        existing.querySelectorAll<HTMLButtonElement>('button').forEach(button => {
-          button.classList.toggle('active', button.dataset.value === select.value);
-        });
+        const browserSelect = existing.querySelector<HTMLSelectElement>('select');
+        if (browserSelect && browserSelect.value !== sourceSelect.value) browserSelect.value = sourceSelect.value;
         return;
       }
 
       const wrapper = document.createElement('section');
       wrapper.className = WRAPPER_CLASS;
-      wrapper.setAttribute('aria-label', 'Browse publications by category');
+      wrapper.setAttribute('aria-label', 'Select a publication category');
 
       const heading = document.createElement('div');
       heading.className = 'publicationCategoryBrowserHead';
-      heading.innerHTML = '<strong>Browse by category</strong><span>Select one group to view its publications together.</span>';
+      heading.innerHTML = '<strong>View publications by category</strong><span>Choose one category to display only the publications in that group.</span>';
 
-      const buttons = document.createElement('div');
-      buttons.className = 'publicationCategoryButtons';
+      const field = document.createElement('label');
+      field.className = 'publicationCategoryField';
 
-      Array.from(select.options).forEach(option => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = option.textContent || option.value;
-        button.dataset.value = option.value;
-        button.classList.toggle('active', option.value === select.value);
-        button.addEventListener('click', () => {
-          select.value = option.value;
-          select.dispatchEvent(new Event('change', { bubbles: true }));
-          buttons.querySelectorAll('button').forEach(item => item.classList.remove('active'));
-          button.classList.add('active');
-          tools.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-        buttons.appendChild(button);
+      const fieldLabel = document.createElement('span');
+      fieldLabel.textContent = 'Select category';
+
+      const browserSelect = document.createElement('select');
+      browserSelect.setAttribute('aria-label', 'Select publication category');
+
+      Array.from(sourceSelect.options).forEach(option => {
+        const copy = document.createElement('option');
+        copy.value = option.value;
+        copy.textContent = option.textContent;
+        browserSelect.appendChild(copy);
+      });
+      browserSelect.value = sourceSelect.value;
+
+      browserSelect.addEventListener('change', () => {
+        sourceSelect.value = browserSelect.value;
+        sourceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        tools.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
-      wrapper.append(heading, buttons);
+      sourceSelect.addEventListener('change', () => {
+        browserSelect.value = sourceSelect.value;
+      });
+
+      field.append(fieldLabel, browserSelect);
+      wrapper.append(heading, field);
       tools.insertAdjacentElement('afterend', wrapper);
-
-      select.addEventListener('change', () => {
-        buttons.querySelectorAll<HTMLButtonElement>('button').forEach(button => {
-          button.classList.toggle('active', button.dataset.value === select.value);
-        });
-      });
     };
 
     mountBrowser();
