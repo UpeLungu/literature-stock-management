@@ -8,6 +8,7 @@ type LocalCounts = Record<string, LocalCount>;
 
 const COUNTS_PREFIX = 'lms-counts-v3:';
 const SUBMIT_SUCCESS_MESSAGE = 'Stock count submitted successfully.';
+const SUBMIT_SUCCESS_EVENT = 'lms:stock-submitted';
 
 function parseCounts(value: string | null): LocalCounts {
   if (!value) return {};
@@ -125,7 +126,13 @@ export default function SafeCloudWriter() {
     };
 
     window.alert = (message?: unknown) => {
-      if (message === SUBMIT_SUCCESS_MESSAGE) void submitCurrentPeriod();
+      if (String(message) === SUBMIT_SUCCESS_MESSAGE) {
+        void submitCurrentPeriod().finally(() => {
+          window.dispatchEvent(new CustomEvent(SUBMIT_SUCCESS_EVENT));
+        });
+        return;
+      }
+
       originalAlert(message === undefined ? '' : String(message));
     };
 
