@@ -9,6 +9,8 @@ type LocalCounts = Record<string, LocalCount>;
 const COUNTS_PREFIX = 'lms-counts-v3:';
 const SUBMIT_SUCCESS_MESSAGE = 'Stock count submitted successfully.';
 const SUBMIT_SUCCESS_EVENT = 'lms:stock-submitted';
+const FINAL_RESET_MARKER = 'lms-final-reset-version';
+const FINAL_RESET_VERSION = '2026-08-04-production-start';
 
 function parseCounts(value: string | null): LocalCounts {
   if (!value) return {};
@@ -19,10 +21,25 @@ function parseCounts(value: string | null): LocalCounts {
   }
 }
 
+function clearLegacyCountsOnce() {
+  if (localStorage.getItem(FINAL_RESET_MARKER) === FINAL_RESET_VERSION) return;
+
+  const keysToRemove: string[] = [];
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith(COUNTS_PREFIX)) keysToRemove.push(key);
+  }
+
+  keysToRemove.forEach((key) => localStorage.removeItem(key));
+  localStorage.setItem(FINAL_RESET_MARKER, FINAL_RESET_VERSION);
+}
+
 export default function SafeCloudWriter() {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
+
+    clearLegacyCountsOnce();
 
     const originalSetItem = Storage.prototype.setItem;
     const originalAlert = window.alert.bind(window);
