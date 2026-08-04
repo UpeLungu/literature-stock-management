@@ -18,7 +18,7 @@ import SafeCloudWriter from './SafeCloudWriter';
 import AuthGate from './AuthGate';
 import SubmissionSuccessController from './SubmissionSuccessController';
 import PublicationCategoryBrowser from './PublicationCategoryBrowser';
-import AdminDialogController from './AdminDialogController';
+import AdminDialogControllerV2 from './AdminDialogControllerV2';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SafeCloudWriter />
           <SubmissionSuccessController />
           <PublicationCategoryBrowser />
-          <AdminDialogController />
+          <AdminDialogControllerV2 />
           {children}
         </AuthGate>
       </body>
