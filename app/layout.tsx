@@ -10,6 +10,7 @@ import './auth.css';
 import './quantity-dialog.css';
 import './ui-polish.css';
 import './submission-success.css';
+import './professional-ui.css';
 import MobileDrawerController from './MobileDrawerController';
 import SafeCloudWriter from './SafeCloudWriter';
 import AuthGate from './AuthGate';
