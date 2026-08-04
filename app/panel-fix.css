@@ -1,6 +1,9 @@
-/* Keep the approved Submission Status panel visible without changing existing features. */
+/* Keep the approved dashboard sections visible without changing application logic. */
 .dashboardGrid > .panel {
   min-width: 0;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .submissionPanel {
@@ -14,9 +17,69 @@
     grid-template-columns: 1fr;
   }
 
+  /* Keep the literature categories first; place status underneath. */
+  .dashboardGrid > .panel {
+    order: 1;
+  }
+
   .submissionPanel {
-    order: -1;
+    order: 2;
     position: static;
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Restore access to Dashboard, Congregations, Publications and other admin pages. */
+  .appShell {
+    display: block;
+  }
+
+  .sidebar {
+    display: block !important;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 10px 12px;
+  }
+
+  .sidebar .brand,
+  .sidebar .version {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .sidebar nav button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 10px 12px;
+  }
+
+  .workspace {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboardGrid > .panel,
+  .submissionPanel {
+    width: 100%;
+  }
+
+  .panelHead .headerActions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .panelHead .headerActions button {
     width: 100%;
   }
 }
