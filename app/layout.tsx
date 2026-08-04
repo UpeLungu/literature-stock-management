@@ -12,11 +12,13 @@ import './ui-polish.css';
 import './submission-success.css';
 import './professional-ui.css';
 import './publication-category-browser.css';
+import './admin-dialog.css';
 import MobileDrawerController from './MobileDrawerController';
 import SafeCloudWriter from './SafeCloudWriter';
 import AuthGate from './AuthGate';
 import SubmissionSuccessController from './SubmissionSuccessController';
 import PublicationCategoryBrowser from './PublicationCategoryBrowser';
+import AdminDialogControllerV2 from './AdminDialogControllerV2';
 
 export const metadata: Metadata = {
   title: 'Literature Management System',
@@ -32,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SafeCloudWriter />
           <SubmissionSuccessController />
           <PublicationCategoryBrowser />
+          <AdminDialogControllerV2 />
           {children}
         </AuthGate>
       </body>
