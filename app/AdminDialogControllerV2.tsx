@@ -23,26 +23,25 @@ const singular=(name:string)=>({Bibles:'Bible',Books:'book','Brochures and Bookl
 export default function AdminDialogControllerV2(){
  const [dialog,setDialog]=useState<Dialog>(null);const [error,setError]=useState('');
  useEffect(()=>{
-  const renameAddButton=()=>{
-   if(heading()!=='Publications')return;
-   const data=read();if(!data)return;
-   const select=document.querySelector<HTMLSelectElement>('.publicationTools select');
-   const panel=select?.closest('.panel');if(!select||!panel)return;
-   const button=[...panel.querySelectorAll<HTMLButtonElement>('button')].find(b=>/^Add (publication|Bible|book|brochure|tract|public magazine|Study Watchtower|meeting workbook|daily text|form)/i.test(b.textContent?.trim()||''));
-   if(!button)return;
-   const category=data.categories.find(c=>c.id===select.value);
-   const next=category?`Add ${singular(category.name)}`:'Add publication';
-   if(button.textContent!==next)button.textContent=next;
-  };
-  renameAddButton();const timer=window.setInterval(renameAddButton,500);
   const click=(event:MouseEvent)=>{
    const button=(event.target as HTMLElement).closest<HTMLButtonElement>('button');if(!button)return;
-   const label=button.textContent?.trim()||'',page=heading(),data=read();if(!data)return;
+   // Never interfere with navigation, drawer controls, stock-count workflow or dialog buttons.
+   if(button.closest('.sidebar, .drawerToggle, .adminDialog, .wizardActions, .quantityDialog, .stockCountTools, .countCards'))return;
+   const page=heading();
+   if(page!=='Publications'&&page!=='Congregations')return;
+   const label=button.textContent?.trim()||'';
+   const isPublicationAdd=page==='Publications'&&button.classList.contains('publicationAddButton');
+   const isCategoryAdd=page==='Publications'&&label==='Add category';
+   const isCongregationAdd=page==='Congregations'&&label==='Add congregation';
+   const article=button.closest('article');
+   const isOwnedRowAction=!!article&&(label==='Edit'||label==='Delete');
+   if(!isPublicationAdd&&!isCategoryAdd&&!isCongregationAdd&&!isOwnedRowAction)return;
+   const data=read();if(!data)return;
    const stop=()=>{event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();setError('')};
-   if(page==='Publications'&&label==='Add category'){stop();setDialog({kind:'category',mode:'add',name:''});return}
-   if(page==='Publications'&&/^Add (?!category)/i.test(label)){stop();const select=document.querySelector<HTMLSelectElement>('.publicationTools select');const categoryId=select?.value&&select.value!=='all'?select.value:data.categories.find(c=>c.active)?.id||'';setDialog({kind:'publication',mode:'add',categoryId,title:'',code:''});return}
-   if(page==='Congregations'&&label==='Add congregation'){stop();setDialog({kind:'congregation',mode:'add',name:''});return}
-   const article=button.closest('article'),text=article?.querySelector('strong')?.textContent?.trim()||'';
+   if(isCategoryAdd){stop();setDialog({kind:'category',mode:'add',name:''});return}
+   if(isPublicationAdd){stop();const select=document.querySelector<HTMLSelectElement>('.publicationTools select');const categoryId=select?.value&&select.value!=='all'?select.value:data.categories.find(c=>c.active)?.id||'';setDialog({kind:'publication',mode:'add',categoryId,title:'',code:''});return}
+   if(isCongregationAdd){stop();setDialog({kind:'congregation',mode:'add',name:''});return}
+   const text=article?.querySelector('strong')?.textContent?.trim()||'';
    if(label==='Edit'&&page==='Congregations'){const item=data.congregations.find(c=>c.name===text);if(item){stop();setDialog({kind:'congregation',mode:'edit',item,name:item.name})}return}
    if(label==='Edit'&&page==='Publications'){
     const pub=data.publications.find(p=>text.includes(p.title));if(pub){stop();setDialog({kind:'publication',mode:'edit',item:pub,categoryId:pub.categoryId,title:pub.title,code:pub.code});return}
@@ -51,7 +50,7 @@ export default function AdminDialogControllerV2(){
    if(label==='Delete'&&page==='Congregations'){const item=data.congregations.find(c=>c.name===text);if(item){stop();setDialog({kind:'delete-congregation',item})}return}
    if(label==='Delete'&&page==='Publications'){const item=data.publications.find(p=>text.includes(p.title));if(item){stop();setDialog({kind:'delete-publication',item})}}
   };
-  document.addEventListener('click',click,true);return()=>{clearInterval(timer);document.removeEventListener('click',click,true)};
+  document.addEventListener('click',click,true);return()=>document.removeEventListener('click',click,true);
  },[]);
  const close=()=>{setDialog(null);setError('')};
  const submit=(event:FormEvent)=>{event.preventDefault();if(!dialog)return;const data=read();if(!data)return setError('Administration data could not be loaded. Refresh and try again.');
@@ -68,5 +67,5 @@ export default function AdminDialogControllerV2(){
  {dialog.kind==='category'&&<label><span>Category name</span><input autoFocus value={dialog.name} onChange={e=>setDialog({...dialog,name:e.target.value})} placeholder="Enter category name"/></label>}
  {dialog.kind==='congregation'&&<label><span>Congregation name</span><input autoFocus value={dialog.name} onChange={e=>setDialog({...dialog,name:e.target.value})} placeholder="Enter congregation name"/></label>}
  {dialog.kind==='publication'&&<><label><span>Category</span><select value={dialog.categoryId} onChange={e=>setDialog({...dialog,categoryId:e.target.value})}>{categories.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label><span>Publication title</span><input autoFocus value={dialog.title} onChange={e=>setDialog({...dialog,title:e.target.value})} placeholder={`Enter ${singular(cat?.name||'publication')} title`}/></label><label><span>Publication code <small>Optional</small></span><input value={dialog.code} onChange={e=>setDialog({...dialog,code:e.target.value})} placeholder="For example: od, T-30 or wp25.1"/></label></>}
- {dialog.kind==='delete-publication'&&<p className="adminDialogWarning">Delete <strong>{dialog.item.title}</strong>? This removes it from the publication list.</p>}{dialog.kind==='delete-congregation'&&<p className="adminDialogWarning">Delete <strong>{dialog.item.name}</strong>? Existing historical counts remain archived.</p>}{error&&<p className="adminDialogError">{error}</p>}<footer><button type="button" className="secondary" onClick={close}>Cancel</button><button type="submit" className={dialog.kind.startsWith('delete')?'danger':''}>{dialog.kind.startsWith('delete')?'Delete':dialog.kind==='publication'&&dialog.mode==='add'?`Add ${singular(cat?.name||'publication')}`:'Save'}</button></footer></form></div>
+ {dialog.kind==='delete-publication'&&<p className="adminDialogWarning">Delete <strong>{dialog.item.title}</strong>? This removes it from the publication list.</p>}{dialog.kind==='delete-congregation'&&<p className="adminDialogWarning">Delete <strong>{dialog.item.name}</strong>? Existing historical counts remain archived.</p>}{error&&<p className="adminDialogError">{error}</p>}<footer><button type="button" className="secondary" onClick={close}>Cancel</button><button type="submit" className={dialog.kind.startsWith('delete')?'danger':''}>{dialog.kind.startsWith('delete')?'Delete':dialog.kind==='publication'&&dialog.mode==='add'?'Add':'Save'}</button></footer></form></div>
 }
