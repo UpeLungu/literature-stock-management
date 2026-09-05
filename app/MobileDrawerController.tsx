@@ -31,9 +31,14 @@ export default function MobileDrawerController() {
     button.addEventListener('click', toggleDrawer);
     overlay.addEventListener('click', closeDrawer);
 
+    // Close only after the React navigation button has handled its own click.
+    // A deferred close avoids changing the drawer/overlay hit area during the
+    // same mobile tap that selects Stock Count, Reports, Publications, etc.
     const sidebar = document.querySelector('.sidebar');
     const handleNavigation = (event: Event) => {
-      if ((event.target as HTMLElement).closest('button')) closeDrawer();
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest('nav button')) return;
+      window.setTimeout(closeDrawer, 0);
     };
     sidebar?.addEventListener('click', handleNavigation);
 
