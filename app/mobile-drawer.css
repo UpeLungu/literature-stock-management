@@ -14,11 +14,12 @@
     transform:translateX(-105%);
     transition:transform .22s ease;
     box-shadow:8px 0 30px rgba(16,33,61,.24);
+    pointer-events:auto!important;
   }
   .sidebar .brand{display:flex!important}
   .sidebar .version{display:block!important}
-  .sidebar nav{display:grid!important;overflow:visible!important;gap:7px!important}
-  .sidebar nav button{width:100%;white-space:normal!important}
+  .sidebar nav{display:grid!important;overflow:visible!important;gap:7px!important;pointer-events:auto!important}
+  .sidebar nav button{width:100%;white-space:normal!important;pointer-events:auto!important;touch-action:manipulation}
   body.drawerOpen .sidebar{transform:translateX(0)}
   .mobileDrawerButton{
     display:grid;
@@ -40,7 +41,10 @@
   .mobileDrawerOverlay{
     display:block;
     position:fixed;
-    inset:0;
+    top:0;
+    right:0;
+    bottom:0;
+    left:min(82vw,300px);
     z-index:1001;
     border:0;
     padding:0;
